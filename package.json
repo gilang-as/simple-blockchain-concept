@@ -20,6 +20,8 @@
   },
   "homepage": "https://github.com/gilang-as/simple-blockchain-concept#readme",
   "dependencies": {
-    "crypto-js": "^4.0.0"
+    "crypto-js": "^4.0.0",
+    "debug": "^4.3.1",
+    "elliptic": "^6.5.4"
   }
 }

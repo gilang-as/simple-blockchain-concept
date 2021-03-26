@@ -1,115 +1,41 @@
-const SHA256 = require("crypto-js/sha256");
+const { Blockchain, Transaction } = require('./blockchain');
+const EC = require('elliptic').ec;
+const ec = new EC('secp256k1');
 
-class Transaction{
-    constructor(fromAddress, toAddress, amount) {
-        this.fromAddress = fromAddress;
-        this.toAddress = toAddress;
-        this.amount = amount;
-    }
+// Your private key goes here
+const myKey = ec.keyFromPrivate('7c4c45907dec40c91bab3480c39032e90049f1a44f3e18c3e07c23e3273995cf');
 
-}
+// From that we can calculate your public key (which doubles as your wallet address)
+const myWalletAddress = myKey.getPublic('hex');
 
-class Block {
-    constructor(timestamp, transactions, previousHash = '') {
-        this.timestamp = timestamp;
-        this.transactions = transactions;
-        this.previousHash = previousHash;
-        this.hash = this.calculateHash();
-        this.nonce = 0;
-    }
+// Create new instance of Blockchain class
+const savjeeCoin = new Blockchain();
 
-    calculateHash() {
-        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.transactions + this.nonce)).toString();
-    }
+// Mine first block
+savjeeCoin.minePendingTransactions(myWalletAddress);
 
-    mineBlock(difficulty){
-        while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")){
-            this.nonce++;
-            this.hash = this.calculateHash();
-        }
+// Create a transaction & sign it with your key
+const tx1 = new Transaction(myWalletAddress, 'address2', 100);
+tx1.signTransaction(myKey);
+savjeeCoin.addTransaction(tx1);
 
-        console.log("Block Mine : "+ this.hash);
-    }
-}
+// Mine block
+savjeeCoin.minePendingTransactions(myWalletAddress);
 
-class Blockchain {
-    constructor() {
-        this.chain = [this.createGenesisBlock()];
-        this.difficulty = 2;
-        this.pendingTransaction = [];
-        this.miningReward = 100;
-    }
+// Create second transaction
+const tx2 = new Transaction(myWalletAddress, 'address1', 50);
+tx2.signTransaction(myKey);
+savjeeCoin.addTransaction(tx2);
 
-    createGenesisBlock() {
-        return new Block("01/01/2017", "Genesis Block", "0");
-    }
+// Mine block
+savjeeCoin.minePendingTransactions(myWalletAddress);
 
-    getLatestBlock() {
-        return this.chain[this.chain.length - 1];
-    }
+console.log();
+console.log(`Balance of xavier is ${savjeeCoin.getBalanceOfAddress(myWalletAddress)}`);
 
-    minePendingTransaction(miningRewardAddress) {
-        let block = new Block(Date.now(), this.pendingTransaction);
-        block.mineBlock(this.difficulty);
-        console.log("Block Success Mined!");
-        this.chain.push(block);
+// Uncomment this line if you want to test tampering with the chain
+// savjeeCoin.chain[1].transactions[0].amount = 10;
 
-        this.pendingTransaction = [
-            new Transaction(null, miningRewardAddress, this.miningReward)
-        ];
-    }
-
-    createTransaction(transaction) {
-        this.pendingTransaction.push(transaction);
-    }
-
-    getBalanceOfAddress(address) {
-        let balance = 0;
-
-        for(const block of this.chain){
-            for(const trans of block.transactions){
-                if (trans.fromAddress === address){
-                    balance -= trans.amount;
-                }
-
-                if (trans.toAddress === address){
-                    balance += trans.amount;
-                }
-            }
-        }
-
-        return balance;
-    }
-
-    isChainValid() {
-        for(let i = 1; i < this.chain.length; i++){
-            const currentBlock = this.chain[i];
-            const previousBlock = this.chain[i - 1];
-
-            if (currentBlock.hash !== currentBlock.calculateHash()){
-                return false;
-            }
-
-            if (currentBlock.previousHash !== previousBlock.hash){
-                return false;
-            }
-        }
-
-        return true;
-    }
-}
-
-let coin = new Blockchain();
-
-coin.createTransaction(new Transaction("address1", "address2", 100))
-coin.createTransaction(new Transaction("address2", "address1", 50))
-
-console.log("\n Starting the miner...");
-coin.minePendingTransaction("mining-address")
-
-console.log("Balance Miner : ", coin.getBalanceOfAddress("mining-address"));
-
-console.log("\n Starting the miner...");
-coin.minePendingTransaction("mining-address")
-
-console.log("Balance Miner : ", coin.getBalanceOfAddress("mining-address"));
+// Check if the chain is valid
+console.log();
+console.log('Blockchain valid?', savjeeCoin.isChainValid() ? 'Yes' : 'No');
