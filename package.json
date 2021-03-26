@@ -1,0 +1,25 @@
+{
+  "name": "simple-blockchain-concept",
+  "version": "0.0.1",
+  "description": "Simple Blockchain Concept",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gilang-as/simple-blockchain-concept.git"
+  },
+  "keywords": [
+    "Blockchain"
+  ],
+  "author": "Gilang Adi S <gilangas@outlook.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gilang-as/simple-blockchain-concept/issues"
+  },
+  "homepage": "https://github.com/gilang-as/simple-blockchain-concept#readme",
+  "dependencies": {
+    "crypto-js": "^4.0.0"
+  }
+}
